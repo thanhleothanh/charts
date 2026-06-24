@@ -25,7 +25,8 @@ spec:
           args:
             - --api.dashboard={{ .Values.ingressRoute.dashboard.enabled }}
             - --log.level={{ .Values.logs.general.level }}
-            - --providers.kubernetesingress.ingressclass=traefik
+            - --providers.kubernetesIngress=true
+            - --providers.kubernetesIngress.ingressclass=traefik
             - --entrypoints.web.address=:{{ .Values.ports.web.exposedPort }}
             - --entrypoints.websecure.address=:{{ .Values.ports.websecure.exposedPort }}
           ports:

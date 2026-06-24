@@ -1,5 +1,5 @@
 apiVersion: v2
-name: traefik
+name: ingress-controller
 description: Traefik ingress controller for personal cluster
 type: application
 version: 1.0.0
