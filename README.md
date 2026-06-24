@@ -1,6 +1,6 @@
 # Personal Kubernetes Cluster
 
-Helm-based project for managing a personal Kubernetes cluster across multiple providers, with namespace-based environment separation.
+Helm-based project for managing a personal Kubernetes cluster with namespace-based environment separation.
 
 All images are pulled from `ghcr.io/thanhleothanh/<project>:latest`.
 
@@ -11,58 +11,87 @@ charts/
 ├── cluster/              # Shared infra (ingress-controller) — deployed ONCE per cluster
 ├── ingress-controller/   # Traefik ingress controller
 ├── namespace/            # Apps — deployed PER namespace (dev, staging, ...)
-├── monitoring/           # Prometheus + Grafana (placeholder)
-└── databases/            # PostgreSQL + Redis (placeholder)
+└── monitoring/           # Prometheus + Grafana (placeholder)
 
 environments/
-├── azure-aks/
-│   ├── cluster-values.yaml      # shared infra overrides
-│   ├── dev/
-│   │   └── values.yaml          # dev apps, config, secrets
-│   └── staging/
-│       └── values.yaml          # staging apps, config, secrets
+└── self-hosted/
+    ├── cluster-values.yaml      # shared infra overrides (NodePort, replicaCount)
+    └── dev/
+        └── values.yaml          # dev apps, config, secrets
 ```
 
 **Two-tier deployment:**
-1. `cluster-deploy` — installs ingress-controller (shared across all namespaces)
+1. `cluster-deploy` — installs Traefik ingress controller (shared across all namespaces)
 2. `namespace-deploy` — installs apps into a specific namespace
 
 Each namespace gets its own resource quotas, app versions, ingress hosts, ConfigMap, and Secrets.
 
-## Supported Providers
+## Current Setup
 
-| Provider | Config |
-|----------|--------|
-| AWS EKS | `environments/aws-eks/` |
-| Azure AKS | `environments/azure-aks/` |
-| Self-hosted | `environments/self-hosted/` |
+| Component | Details |
+|-----------|---------|
+| Cluster | k3s v1.35.5+k3s1 on Rancher Desktop |
+| Ingress | Traefik v3.0, NodePort 30080 (HTTP) / 30443 (HTTPS) |
 
-## Quick Start
+## Prerequisites
+
+- k3s (via Rancher Desktop or Docker Desktop)
+- Helm 3.x
+- `kubectl` configured for your cluster
+- PostgreSQL running in Docker (for kotlin-spring)
+
+## Step-by-Step: Bring Up the Application
+
+### 1. Verify k3s is running
 
 ```bash
-# 1. Deploy cluster infra (ingress-controller)
-make cluster-deploy ENV=azure-aks
+kubectl get nodes
+```
 
-# 2. Deploy apps to dev namespace
-make namespace-deploy ENV=azure-aks NS=dev
+You should see a node with status `Ready`.
 
-# 3. Deploy apps to staging namespace
-make namespace-deploy ENV=azure-aks NS=staging
+### 2. Deploy cluster infrastructure (Traefik)
 
-# All-in-one (cluster + one namespace)
-make deploy-all ENV=azure-aks NS=dev
+```bash
+helm upgrade --install personal-cluster charts/cluster \
+  -n default \
+  -f environments/self-hosted/cluster-values.yaml \
+  --wait
+```
 
-# Dry run
-make dry-run-cluster ENV=azure-aks
-make dry-run-namespace ENV=azure-aks NS=dev
+Verify Traefik is running:
 
-# Lint everything
-make lint
+```bash
+kubectl get svc personal-cluster-ingress-controller
+```
 
-# Teardown
-make teardown-namespace ENV=azure-aks NS=dev
-make teardown-cluster ENV=azure-aks
-make teardown-all ENV=azure-aks NS=dev
+You should see NodePorts `30080/TCP` and `30443/TCP`.
+
+### 3. Deploy apps to dev namespace
+
+```bash
+helm upgrade --install dev-apps charts/namespace \
+  -n dev --create-namespace \
+  -f environments/self-hosted/dev/values.yaml \
+  --wait
+```
+
+Verify the app is running:
+
+```bash
+kubectl get pods -n dev
+kubectl get svc -n dev
+```
+
+## Teardown
+
+```bash
+# Remove apps
+helm uninstall dev-apps -n dev
+kubectl delete namespace dev
+
+# Remove cluster infra
+helm uninstall personal-cluster -n default
 ```
 
 ## Per-Namespace Configuration
@@ -71,81 +100,17 @@ Each namespace gets its own `values.yaml` with:
 
 - **Which apps** are enabled/disabled
 - **Image tags** (e.g., `latest` for dev, `v1.0.0` for staging)
-- **Replica counts** (1 for dev, 2+ for staging)
 - **Resource quotas** per namespace
 - **Ingress hosts** (e.g., `app.dev.example.com` vs `app.staging.example.com`)
 - **ConfigMap** — shared non-sensitive env vars for all apps
 - **Secret** — shared sensitive env vars for all apps
 
-Example dev vs staging:
-
-```yaml
-# environments/azure-aks/dev/values.yaml
-namespace:
-  name: dev
-configMap:
-  enabled: true
-  data:
-    APP_ENV: dev
-    LOG_LEVEL: debug
-secret:
-  enabled: true
-  data:
-    DB_PASSWORD: devpassword123
-apps:
-  kotlin-spring:
-    enabled: true
-    image:
-      tag: latest
-    replicaCount: 1
-
-# environments/azure-aks/staging/values.yaml
-namespace:
-  name: staging
-configMap:
-  enabled: true
-  data:
-    APP_ENV: staging
-    LOG_LEVEL: info
-secret:
-  enabled: true
-  data:
-    DB_PASSWORD: stagingpassword456
-apps:
-  kotlin-spring:
-    enabled: true
-    image:
-      tag: v1.0.0
-    replicaCount: 2
-```
-
-## Namespace ConfigMap & Secrets
-
-Each namespace creates a ConfigMap and Secret that are injected into all apps via `envFrom`:
-
-```yaml
-configMap:
-  enabled: true
-  data:
-    APP_ENV: dev
-    LOG_LEVEL: debug
-    CORS_ALLOWED_ORIGINS: "http://localhost:3000"
-
-secret:
-  enabled: true
-  data:
-    DB_PASSWORD: changeme
-    API_KEY: changeme
-```
-
-All apps in the namespace automatically receive these as environment variables.
-
 ## Adding a New Namespace
 
-1. Create directory: `environments/<provider>/<namespace>/`
+1. Create directory: `environments/self-hosted/<namespace>/`
 2. Copy an existing values.yaml as a template
 3. Customize apps, tags, hosts, configMap, secrets
-4. Deploy: `make namespace-deploy ENV=<provider> NS=<namespace>`
+4. Deploy: `helm upgrade --install <namespace>-apps charts/namespace -n <namespace> --create-namespace -f environments/self-hosted/<namespace>/values.yaml`
 
 ## Adding a New App
 
@@ -187,9 +152,3 @@ Then in the namespace values.yaml:
 imagePullSecrets:
   - name: ghcr-pull
 ```
-
-## Prerequisites
-
-- Helm 3.x
-- `kubectl` configured for your cluster
-- Access to your target cloud provider CLI (aws, az)

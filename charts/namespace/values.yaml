@@ -2,16 +2,16 @@
 # Each namespace (dev, staging, prod) gets its own copy of this file
 # with different app toggles and image tags
 
-namespace:
-  name: dev
-  createResourceQuota: true
-  resourceQuota:
-    requests:
-      cpu: "2"
-      memory: 4Gi
-    limits:
-      cpu: "4"
-      memory: 8Gi
+# namespace:
+#   name: dev
+#   createResourceQuota: true
+#   resourceQuota:
+#     requests:
+#       cpu: "2"
+#       memory: 4Gi
+#     limits:
+#       cpu: "4"
+#       memory: 8Gi
 
 defaults:
   replicaCount: 1
@@ -19,11 +19,11 @@ defaults:
     pullPolicy: IfNotPresent
   resources:
     requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
       cpu: 250m
       memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
   service:
     type: ClusterIP
     port: 80
@@ -40,34 +40,11 @@ imagePullSecrets: []
 
 # Namespace-level ConfigMap (non-sensitive env vars injected into all apps)
 configMap:
-  enabled: true
-  data:
-    APP_ENV: dev
-    LOG_LEVEL: info
-    FEATURE_FLAG_X: "false"
+  enabled: false
 
 # Namespace-level Secret (sensitive env vars injected into all apps)
 secret:
-  enabled: true
-  data:
-    DB_PASSWORD: changeme
-    API_KEY: changeme
+  enabled: false
 
 # Apps for this namespace
 # Toggle enabled + set image tags per environment
-apps:
-  kotlin-spring:
-    enabled: true
-    image:
-      repository: ghcr.io/thanhleothanh/kotlin-spring
-      tag: latest
-    replicaCount: 1
-    service:
-      port: 8080
-    ingress:
-      enabled: true
-      hosts:
-        - host: kotlin-spring.dev.local
-          paths:
-            - path: /
-              pathType: Prefix

@@ -18,8 +18,14 @@ spec:
     - name: web
       port: {{ .Values.ports.web.exposedPort }}
       targetPort: web
+      {{- if .Values.service.nodePorts }}
+      nodePort: {{ .Values.service.nodePorts.web }}
+      {{- end }}
       protocol: TCP
     - name: websecure
       port: {{ .Values.ports.websecure.exposedPort }}
       targetPort: websecure
+      {{- if .Values.service.nodePorts }}
+      nodePort: {{ .Values.service.nodePorts.websecure }}
+      {{- end }}
       protocol: TCP

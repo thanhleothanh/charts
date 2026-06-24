@@ -2,6 +2,7 @@
 
 ingress-controller:
   enabled: true
+  replicaCount: 1
   service:
     type: NodePort
     nodePorts:
