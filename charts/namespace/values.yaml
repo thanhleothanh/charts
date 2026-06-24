@@ -16,7 +16,7 @@
 defaults:
   replicaCount: 1
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   resources:
     requests:
       cpu: 250m

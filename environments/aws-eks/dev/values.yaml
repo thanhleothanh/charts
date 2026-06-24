@@ -5,11 +5,11 @@ namespace:
   createResourceQuota: true
   resourceQuota:
     requests:
+      cpu: "1"
+      memory: 2Gi
+    limits:
       cpu: "2"
       memory: 4Gi
-    limits:
-      cpu: "4"
-      memory: 8Gi
 
 apps:
   kotlin-spring:
@@ -23,7 +23,21 @@ apps:
     ingress:
       enabled: true
       hosts:
-        - host: kotlin-spring.dev.eks.example.com
-          paths:
-            - path: /
+        - paths:
+            - path: /kotlin-spring
               pathType: Prefix
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1024Mi
+
+configMap:
+  enabled: true
+  data:
+    # remember to add
+    # DB_URL: jdbc:postgresql://host.docker.internal:5432/demo
+    # DB_USERNAME: postgres
+    # DB_PASSWORD: postgres

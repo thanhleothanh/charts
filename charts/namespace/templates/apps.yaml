@@ -83,7 +83,7 @@ spec:
   {{- end }}
   rules:
     {{- range $app.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ .host | default "" | quote }}
       http:
         paths:
           {{- range .paths }}

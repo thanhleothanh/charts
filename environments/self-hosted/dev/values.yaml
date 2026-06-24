@@ -17,15 +17,15 @@ apps:
     image:
       repository: ghcr.io/thanhleothanh/kotlin-spring
       tag: latest
+      pullPolicy: Always
     replicaCount: 1
     service:
       port: 8080
     ingress:
       enabled: true
       hosts:
-        - host: kotlin-spring.thanh.test
-          paths:
-            - path: /
+        - paths:
+            - path: /kotlin-spring
               pathType: Prefix
     resources:
       requests:
