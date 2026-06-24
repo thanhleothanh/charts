@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-ingress-controller
+  labels:
+    app: ingress-controller
+    {{- include "ingress-controller.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: ingress-controller
+      {{- include "ingress-controller.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: ingress-controller
+        {{- include "ingress-controller.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Release.Name }}-ingress-controller
+      containers:
+        - name: traefik
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --api.dashboard={{ .Values.ingressRoute.dashboard.enabled }}
+            - --log.level={{ .Values.logs.general.level }}
+            - --providers.kubernetesingress.ingressclass=traefik
+            - --entrypoints.web.address=:{{ .Values.ports.web.exposedPort }}
+            - --entrypoints.websecure.address=:{{ .Values.ports.websecure.exposedPort }}
+          ports:
+            - name: web
+              containerPort: {{ .Values.ports.web.exposedPort }}
+              protocol: TCP
+            - name: websecure
+              containerPort: {{ .Values.ports.websecure.exposedPort }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

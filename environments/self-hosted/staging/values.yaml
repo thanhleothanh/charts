@@ -1,0 +1,29 @@
+# Self-hosted - staging namespace
+
+namespace:
+  name: staging
+  createResourceQuota: true
+  resourceQuota:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi
+
+apps:
+  kotlin-spring:
+    enabled: true
+    image:
+      repository: ghcr.io/thanhleothanh/kotlin-spring
+      tag: v1.0.0
+    replicaCount: 2
+    service:
+      port: 8080
+    ingress:
+      enabled: true
+      hosts:
+        - host: kotlin-spring.staging.local
+          paths:
+            - path: /
+              pathType: Prefix

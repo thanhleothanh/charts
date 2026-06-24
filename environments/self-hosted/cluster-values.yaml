@@ -1,0 +1,12 @@
+# Self-hosted (bare metal / k3s) - shared infrastructure
+
+ingress-controller:
+  enabled: true
+  service:
+    type: NodePort
+    nodePorts:
+      web: 30080
+      websecure: 30443
+
+monitoring:
+  enabled: false

@@ -1,0 +1,11 @@
+# Azure AKS - shared infrastructure
+
+ingress-controller:
+  enabled: true
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/azure-load-balancer-resource-group: ""
+
+monitoring:
+  enabled: false

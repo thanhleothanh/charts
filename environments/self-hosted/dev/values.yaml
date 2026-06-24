@@ -1,0 +1,42 @@
+# Self-hosted - dev namespace
+
+namespace:
+  name: dev
+  createResourceQuota: true
+  resourceQuota:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi
+
+apps:
+  kotlin-spring:
+    enabled: true
+    image:
+      repository: ghcr.io/thanhleothanh/kotlin-spring
+      tag: latest
+    replicaCount: 1
+    service:
+      port: 8080
+    ingress:
+      enabled: true
+      hosts:
+        - host: kotlin-spring.dev.local
+          paths:
+            - path: /
+              pathType: Prefix
+
+configMap:
+  enabled: true
+  data:
+    APP_ENV: dev
+    LOG_LEVEL: debug
+    CORS_ALLOWED_ORIGINS: "http://localhost:3000"
+
+secret:
+  enabled: true
+  data:
+    DB_PASSWORD: devpassword123
+    API_KEY: dev-api-key-123

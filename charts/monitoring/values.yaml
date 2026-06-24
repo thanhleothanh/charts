@@ -1,0 +1,15 @@
+# Monitoring stack values
+# Placeholder for Prometheus + Grafana
+# Expand as needed
+
+enabled: false
+
+prometheus:
+  enabled: false
+  retention: 15d
+  storageSize: 10Gi
+
+grafana:
+  enabled: false
+  adminPassword: "changeme"
+  storageSize: 5Gi
