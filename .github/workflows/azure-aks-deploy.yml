@@ -53,6 +53,10 @@ jobs:
           echo "sets=$SETS" >> $GITHUB_OUTPUT
         shell: bash
 
+      - name: Build Helm dependencies
+        run: |
+          helm dependency build ./charts/cluster
+
       - name: Deploy cluster chart (Traefik)
         run: |
           helm upgrade --install personal-cluster ./charts/cluster \
