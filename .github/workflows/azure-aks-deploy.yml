@@ -1,0 +1,71 @@
+name: Deploy to Azure AKS
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Target namespace'
+        required: true
+        type: choice
+        options:
+          - dev
+      resource_group:
+        description: 'Azure resource group'
+        required: true
+        type: string
+        default: 'rg-dev-web'
+      cluster_name:
+        description: 'AKS cluster name'
+        required: true
+        type: string
+        default: 'personal-cluster'
+      image_tags:
+        description: 'Image tags as JSON (e.g., {"kotlin-spring": "abc123"})'
+        required: false
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ github.event.inputs.resource_group }}
+          cluster-name: ${{ github.event.inputs.cluster_name }}
+
+      - name: Build Helm set flags
+        id: helm-sets
+        run: |
+          SETS=""
+          if [ -n "${{ github.event.inputs.image_tags }}" ]; then
+            while IFS='=' read -r key value; do
+              SETS="$SETS --set apps.$key.image.tag=$value"
+            done < <(echo '${{ github.event.inputs.image_tags }}' | jq -r 'to_entries[] | "\(.key)=\(.value)"')
+          fi
+          echo "sets=$SETS" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Deploy cluster chart (Traefik)
+        run: |
+          helm upgrade --install personal-cluster ./charts/cluster \
+            -n default \
+            -f ./environments/azure-aks/cluster-values.yaml \
+            --wait
+
+      - name: Deploy namespace chart
+        run: |
+          helm upgrade --install ${{ github.event.inputs.env }}-apps ./charts/namespace \
+            -n ${{ github.event.inputs.env }} --create-namespace \
+            -f ./environments/azure-aks/${{ github.event.inputs.env }}/values.yaml \
+            ${{ steps.helm-sets.outputs.sets }} \
+            --wait
