@@ -1,13 +1,16 @@
-{{- if .Values.configMap.enabled }}
+{{- range $i, $ref := .Values.configMap.refs }}
+{{- if $i }}
+---
+{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Values.namespace.name }}-config
-  namespace: {{ .Values.namespace.name }}
+  name: {{ $ref.name }}
+  namespace: {{ $.Values.namespace.name }}
   labels:
-    {{- include "namespace.labels" . | nindent 4 }}
+    {{- include "namespace.labels" $ | nindent 4 }}
 data:
-  {{- range $key, $val := .Values.configMap.data }}
+  {{- range $key, $val := $ref.data }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
 {{- end }}

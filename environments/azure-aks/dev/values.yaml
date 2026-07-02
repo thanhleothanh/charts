@@ -14,9 +14,12 @@ namespace:
 apps:
   kotlin-spring:
     enabled: true
+    configMapRefs:
+      - name: kotlin-spring-configmap
     image:
       repository: ghcr.io/thanhleothanh/kotlin-spring
       tag: latest
+      pullPolicy: Always
     replicaCount: 1
     service:
       port: 8080
@@ -35,9 +38,13 @@ apps:
         memory: 1024Mi
 
 configMap:
-  enabled: true
-  data:
-    # remember to add
-    # DB_URL: jdbc:postgresql://host.docker.internal:5432/demo
-    # DB_USERNAME: postgres
-    # DB_PASSWORD: postgres
+  refs:
+    - name: kotlin-spring-configmap
+      data:
+        ASB_QUEUE_MODE: asb
+        ASB_QUEUE_NAME: demo-events
+
+secret:
+  refs:
+    - name: db-secret
+    - name: asb-secret

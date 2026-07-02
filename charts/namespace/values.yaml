@@ -13,6 +13,12 @@
 #       cpu: "4"
 #       memory: 8Gi
 
+# Enable pre-flight validation (requires cluster connection)
+# `helm template` and `--dry-run` will NOT verify refs exist
+# Set to true to fail early if referenced ConfigMaps/Secrets are missing
+validations:
+  verifyRefs: false
+
 defaults:
   replicaCount: 1
   image:
@@ -38,13 +44,25 @@ defaults:
 #   - name: ghcr-pull
 imagePullSecrets: []
 
-# Namespace-level ConfigMap (non-sensitive env vars injected into all apps)
+# Namespace-level ConfigMaps created by the chart
+# Each ref creates a ConfigMap that apps can reference via configMapRefs
 configMap:
-  enabled: false
+  refs: []
+  #   - name: app-config
+  #     data:
+  #       KEY: value
 
-# Namespace-level Secret (sensitive env vars injected into all apps)
+# Reference existing Secrets (created manually with kubectl)
+# These are injected into all apps' envFrom
 secret:
-  enabled: false
+  refs: []
+  #   - name: my-existing-secret
 
 # Apps for this namespace
 # Toggle enabled + set image tags per environment
+# Each app can reference namespace-level ConfigMaps:
+#   configMapRefs:
+#     - name: app-config
+# And set direct env vars:
+#   env:
+#     KEY: value

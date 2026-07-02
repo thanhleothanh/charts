@@ -10,8 +10,7 @@ All images are pulled from `ghcr.io/thanhleothanh/<project>:latest`.
 charts/
 ├── cluster/              # Shared infra (ingress-controller) — deployed ONCE per cluster
 ├── ingress-controller/   # Traefik ingress controller
-├── namespace/            # Apps — deployed PER namespace (dev, staging, ...)
-└── monitoring/           # Prometheus + Grafana (placeholder)
+└── namespace/            # Apps — deployed PER namespace (dev, staging, ...)
 
 environments/
 └── self-hosted/
@@ -26,31 +25,9 @@ environments/
 
 Each namespace gets its own resource quotas, app versions, ingress hosts, ConfigMap, and Secrets.
 
-## Current Setup
-
-| Component | Details |
-|-----------|---------|
-| Cluster | k3s v1.35.5+k3s1 on Rancher Desktop |
-| Ingress | Traefik v3.0, NodePort 30080 (HTTP) / 30443 (HTTPS) |
-
-## Prerequisites
-
-- k3s (via Rancher Desktop or Docker Desktop)
-- Helm 3.x
-- `kubectl` configured for your cluster
-- PostgreSQL running in Docker (for kotlin-spring)
-
 ## Step-by-Step: Bring Up the Application
 
-### 1. Verify k3s is running
-
-```bash
-kubectl get nodes
-```
-
-You should see a node with status `Ready`.
-
-### 2. Deploy cluster infrastructure (Traefik)
+### 1. Deploy cluster infrastructure (Traefik)
 
 ```bash
 helm upgrade --install personal-cluster charts/cluster \
@@ -59,28 +36,14 @@ helm upgrade --install personal-cluster charts/cluster \
   --wait
 ```
 
-Verify Traefik is running:
-
-```bash
-kubectl get svc personal-cluster-ingress-controller
-```
-
-You should see NodePorts `30080/TCP` and `30443/TCP`.
-
-### 3. Deploy apps to dev namespace
+### 2. Deploy apps to dev namespace
 
 ```bash
 helm upgrade --install dev-apps charts/namespace \
   -n dev --create-namespace \
   -f environments/self-hosted/dev/values.yaml \
+  --set validations.verifyRefs=true
   --wait
-```
-
-Verify the app is running:
-
-```bash
-kubectl get pods -n dev
-kubectl get svc -n dev
 ```
 
 ## Teardown
@@ -94,22 +57,11 @@ kubectl delete namespace dev
 helm uninstall personal-cluster -n default
 ```
 
-## Per-Namespace Configuration
+## Adding a New Env/Namespace
 
-Each namespace gets its own `values.yaml` with:
-
-- **Which apps** are enabled/disabled
-- **Image tags** (e.g., `latest` for dev, `v1.0.0` for staging)
-- **Resource quotas** per namespace
-- **Ingress hosts** (e.g., `app.dev.example.com` vs `app.staging.example.com`)
-- **ConfigMap** — shared non-sensitive env vars for all apps
-- **Secret** — shared sensitive env vars for all apps
-
-## Adding a New Namespace
-
-1. Create directory: `environments/self-hosted/<namespace>/`
+1. Create directory: `environments/<env>/<namespace>/`
 2. Copy an existing values.yaml as a template
-3. Customize apps, tags, hosts, configMap, secrets
+3. Customize apps, tags, hosts, configMap, secrets. Remember to create secret per ref beforehand
 4. Deploy: `helm upgrade --install <namespace>-apps charts/namespace -n <namespace> --create-namespace -f environments/self-hosted/<namespace>/values.yaml`
 
 ## Adding a New App
@@ -133,22 +85,4 @@ apps:
           paths:
             - path: /
               pathType: Prefix
-```
-
-## GHCR Private Images
-
-If your repos are private, create an image pull secret:
-
-```bash
-kubectl create secret docker-registry ghcr-pull \
-  --docker-server=ghcr.io \
-  --docker-username=thanhleothanh \
-  --docker-password=<your-github-pat>
-```
-
-Then in the namespace values.yaml:
-
-```yaml
-imagePullSecrets:
-  - name: ghcr-pull
 ```
