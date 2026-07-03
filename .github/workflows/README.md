@@ -7,23 +7,8 @@ GitHub Actions workflow for deploying Helm charts to Azure AKS.
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
 | `env` | Yes | — | Target namespace: `dev`, `staging`, `prod` |
-| `resource_group` | Yes | `apps` | Azure resource group |
+| `resource_group` | Yes | `rg-dev-web` | Azure resource group |
 | `cluster_name` | Yes | `personal-cluster` | AKS cluster name |
-| `image_tags` | No | — | Image tags as JSON |
-
-### Image Tags Format
-
-Pass one or more app image tags as JSON:
-
-```json
-{"kotlin-spring": "a1b2c3d"}
-```
-
-```json
-{"kotlin-spring": "a1b2c3d", "api-gateway": "e5f6g7h"}
-```
-
-Leave empty to deploy without changing image tags.
 
 ## Prerequisites
 

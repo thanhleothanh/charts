@@ -23,5 +23,5 @@ scripts/
 Makefile
 README.md
 environments/
-charts/*/charts/*.tgz
-Chart.lock
+**/charts/*.tgz
+**/Chart.lock

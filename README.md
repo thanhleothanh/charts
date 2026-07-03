@@ -8,9 +8,11 @@ All images are pulled from `ghcr.io/thanhleothanh/<project>:latest`.
 
 ```
 charts/
-├── cluster/              # Shared infra (ingress-controller) — deployed ONCE per cluster
-├── ingress-controller/   # Traefik ingress controller
-└── namespace/            # Apps — deployed PER namespace (dev, staging, ...)
+├── infra/
+│   ├── cluster/              # Shared infra (ingress-controller) — deployed ONCE per cluster
+│   └── ingress-controller/   # Traefik ingress controller
+└── apps/
+    └── namespace/            # Apps — deployed PER namespace (dev, staging, ...)
 
 environments/
 └── self-hosted/
@@ -30,7 +32,7 @@ Each namespace gets its own resource quotas, app versions, ingress hosts, Config
 ### 1. Deploy cluster infrastructure (Traefik)
 
 ```bash
-helm upgrade --install personal-cluster charts/cluster \
+helm upgrade --install personal-cluster charts/infra/cluster \
   -n default \
   -f environments/self-hosted/cluster-values.yaml \
   --wait
@@ -39,7 +41,7 @@ helm upgrade --install personal-cluster charts/cluster \
 ### 2. Deploy apps to dev namespace
 
 ```bash
-helm upgrade --install dev-apps charts/namespace \
+helm upgrade --install dev-apps charts/apps/namespace \
   -n dev --create-namespace \
   -f environments/self-hosted/dev/values.yaml \
   --set validations.verifyRefs=true
@@ -62,7 +64,7 @@ helm uninstall personal-cluster -n default
 1. Create directory: `environments/<env>/<namespace>/`
 2. Copy an existing values.yaml as a template
 3. Customize apps, tags, hosts, configMap, secrets. Remember to create secret per ref beforehand
-4. Deploy: `helm upgrade --install <namespace>-apps charts/namespace -n <namespace> --create-namespace -f environments/self-hosted/<namespace>/values.yaml`
+4. Deploy: `helm upgrade --install <namespace>-apps charts/apps/namespace -n <namespace> --create-namespace -f environments/self-hosted/<namespace>/values.yaml`
 
 ## Adding a New App
 
