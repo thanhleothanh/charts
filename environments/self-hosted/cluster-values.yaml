@@ -8,6 +8,3 @@ ingress-controller:
     nodePorts:
       web: 30080
       websecure: 30443
-
-monitoring:
-  enabled: false

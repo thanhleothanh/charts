@@ -1,0 +1,27 @@
+name: Helm Lint
+
+on:
+  push:
+    branches: [main]
+    paths: ['charts/**', 'environments/**']
+  pull_request:
+    branches: [main]
+    paths: ['charts/**', 'environments/**']
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Lint charts
+        run: |
+          helm lint charts/infra/ingress-controller
+
+          for f in environments/*/cluster-values.yaml; do
+            helm lint charts/infra/cluster -f "$f"
+          done
+
+          for f in environments/*/*/values.yaml; do
+            helm template dev charts/apps/namespace -f "$f"
+          done

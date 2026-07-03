@@ -1,0 +1,68 @@
+# Per-namespace app values
+# Each namespace (dev, staging, prod) gets its own copy of this file
+# with different app toggles and image tags
+
+# namespace:
+#   name: dev
+#   createResourceQuota: true
+#   resourceQuota:
+#     requests:
+#       cpu: "2"
+#       memory: 4Gi
+#     limits:
+#       cpu: "4"
+#       memory: 8Gi
+
+# Enable pre-flight validation (requires cluster connection)
+# `helm template` and `--dry-run` will NOT verify refs exist
+# Set to true to fail early if referenced ConfigMaps/Secrets are missing
+validations:
+  verifyRefs: false
+
+defaults:
+  replicaCount: 1
+  image:
+    pullPolicy: Always
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  service:
+    type: ClusterIP
+    port: 80
+  ingress:
+    enabled: false
+    className: traefik
+    annotations: {}
+    tls: []
+
+# For private ghcr.io images:
+# imagePullSecrets:
+#   - name: ghcr-pull
+imagePullSecrets: []
+
+# Namespace-level ConfigMaps created by the chart
+# Each ref creates a ConfigMap that apps can reference via configMapRefs
+configMap:
+  refs: []
+  #   - name: app-config
+  #     data:
+  #       KEY: value
+
+# Reference existing Secrets (created manually with kubectl)
+# These are injected into all apps' envFrom
+secret:
+  refs: []
+  #   - name: my-existing-secret
+
+# Apps for this namespace
+# Toggle enabled + set image tags per environment
+# Each app can reference namespace-level ConfigMaps:
+#   configMapRefs:
+#     - name: app-config
+# And set direct env vars:
+#   env:
+#     KEY: value

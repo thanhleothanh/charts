@@ -6,6 +6,3 @@ ingress-controller:
   service:
     type: LoadBalancer
 
-monitoring:
-  enabled: false
-

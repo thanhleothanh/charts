@@ -1,0 +1,16 @@
+{{- range $i, $ref := .Values.configMap.refs }}
+{{- if $i }}
+---
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $ref.name }}
+  namespace: {{ $.Values.namespace.name }}
+  labels:
+    {{- include "namespace.labels" $ | nindent 4 }}
+data:
+  {{- range $key, $val := $ref.data }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+{{- end }}

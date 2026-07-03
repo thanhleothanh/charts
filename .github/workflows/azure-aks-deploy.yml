@@ -19,10 +19,6 @@ on:
         required: true
         type: string
         default: 'personal-cluster'
-      image_tags:
-        description: 'Image tags as JSON (e.g., {"kotlin-spring": "abc123"})'
-        required: false
-        type: string
 
 jobs:
   deploy:
@@ -33,7 +29,7 @@ jobs:
       - name: Azure Login
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }} # remember to Create Service Principal secret from az
 
       - name: Set AKS context
         uses: azure/aks-set-context@v4
@@ -41,33 +37,23 @@ jobs:
           resource-group: ${{ github.event.inputs.resource_group }}
           cluster-name: ${{ github.event.inputs.cluster_name }}
 
-      - name: Build Helm set flags
-        id: helm-sets
-        run: |
-          SETS=""
-          if [ -n "${{ github.event.inputs.image_tags }}" ]; then
-            while IFS='=' read -r key value; do
-              SETS="$SETS --set apps.$key.image.tag=$value"
-            done < <(echo '${{ github.event.inputs.image_tags }}' | jq -r 'to_entries[] | "\(.key)=\(.value)"')
-          fi
-          echo "sets=$SETS" >> $GITHUB_OUTPUT
-        shell: bash
-
       - name: Build Helm dependencies
         run: |
-          helm dependency build ./charts/cluster
+          helm dependency build ./charts/infra/cluster
 
       - name: Deploy cluster chart (Traefik)
         run: |
-          helm upgrade --install personal-cluster ./charts/cluster \
+          helm upgrade --install personal-cluster ./charts/infra/cluster \
             -n default \
             -f ./environments/azure-aks/cluster-values.yaml \
-            --wait
+            --wait \
+            --atomic
 
       - name: Deploy namespace chart
         run: |
-          helm upgrade --install ${{ github.event.inputs.env }}-apps ./charts/namespace \
+          helm upgrade --install ${{ github.event.inputs.env }}-apps ./charts/apps/namespace \
             -n ${{ github.event.inputs.env }} --create-namespace \
             -f ./environments/azure-aks/${{ github.event.inputs.env }}/values.yaml \
-            ${{ steps.helm-sets.outputs.sets }} \
-            --wait
+            --set validations.verifyRefs=true \
+            --wait \
+            --atomic

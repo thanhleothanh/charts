@@ -31,15 +31,29 @@ spec:
             - name: http
               containerPort: {{ $app.service.port | default $.Values.defaults.service.port }}
               protocol: TCP
+          {{- $hasEnvFrom := (or (not (empty $app.configMapRefs)) (not (empty $.Values.secret.refs)) (not (empty $app.secretRefs))) }}
+          {{- if $hasEnvFrom }}
           envFrom:
-            {{- if $.Values.configMap.enabled }}
+            {{- range $app.configMapRefs }}
             - configMapRef:
-                name: {{ $.Values.namespace.name }}-config
+                name: {{ .name }}
             {{- end }}
-            {{- if $.Values.secret.enabled }}
+            {{- range $.Values.secret.refs }}
             - secretRef:
-                name: {{ $.Values.namespace.name }}-secret
+                name: {{ .name }}
             {{- end }}
+            {{- range $app.secretRefs }}
+            - secretRef:
+                name: {{ .name }}
+            {{- end }}
+          {{- end }}
+          {{- with $app.env }}
+          env:
+            {{- range $key, $val := . }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+          {{- end }}
           resources:
             {{- toYaml ($app.resources | default $.Values.defaults.resources) | nindent 12 }}
 ---
