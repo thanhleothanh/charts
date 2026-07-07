@@ -9,7 +9,6 @@ All images are pulled from `ghcr.io/thanhleothanh/<project>:latest`.
 ```
 charts/
 ├── infra/
-│   ├── ingress-controller/     # Traefik ingress controller
 │   └── secret-store/           # ClusterSecretStore (external-secrets)
 └── apps/
     └── namespace/              # Apps — deployed PER namespace (dev, staging, ...)
@@ -38,7 +37,7 @@ environments/
 | 0 | HashiCorp Vault *(if self-hosted)* | Official Helm chart |
 | 1 | External Secrets Operator | Official Helm chart |
 | 2 | ClusterSecretStore | `charts/infra/secret-store` |
-| 3 | Traefik ingress controller | `charts/infra/ingress-controller` |
+| 3 | Traefik ingress controller | Official chart: `traefik/traefik` |
 | 4 | Namespace apps | `charts/apps/namespace` |
 
 ## Prerequisites
@@ -97,9 +96,11 @@ helm upgrade --install secret-store charts/infra/secret-store \
 ```
 
 ### 3. Deploy Traefik ingress controller
+
 ```bash
-helm upgrade --install ingress-controller charts/infra/ingress-controller \
-  -n ingress-controller --create-namespace \
+helm repo add traefik https://traefik.github.io/charts
+helm upgrade --install traefik traefik/traefik \
+  -n traefik --create-namespace \
   -f environments/self-hosted/infra/ingress-controller-values.yaml \
   --wait
 ```
