@@ -27,14 +27,14 @@ spec:
             - --log.level={{ .Values.logs.general.level }}
             - --providers.kubernetesIngress=true
             - --providers.kubernetesIngress.ingressclass=traefik
-            - --entrypoints.web.address=:{{ .Values.ports.web.exposedPort }}
-            - --entrypoints.websecure.address=:{{ .Values.ports.websecure.exposedPort }}
+            - --entrypoints.web.address=:{{ .Values.ports.web.port }}
+            - --entrypoints.websecure.address=:{{ .Values.ports.websecure.port }}
           ports:
             - name: web
-              containerPort: {{ .Values.ports.web.exposedPort }}
+              containerPort: {{ .Values.ports.web.port }}
               protocol: TCP
             - name: websecure
-              containerPort: {{ .Values.ports.websecure.exposedPort }}
+              containerPort: {{ .Values.ports.websecure.port }}
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
