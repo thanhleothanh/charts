@@ -1,0 +1,6 @@
+service:
+  type: LoadBalancer
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: ""
+    service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/ping"
+    service.beta.kubernetes.io/azure-load-balancer-idle-timeout: "120"

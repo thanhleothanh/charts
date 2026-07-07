@@ -16,12 +16,13 @@ jobs:
       - uses: azure/setup-helm@v4
       - name: Lint charts
         run: |
-          helm lint charts/infra/ingress-controller
-
-          for f in environments/*/cluster-values.yaml; do
-            helm lint charts/infra/cluster -f "$f"
+          for infra_values in environments/*/infra/*-values.yaml; do
+            env_dir="$(dirname "$(dirname "$infra_values")")"
+            env="$(basename "$env_dir")"
+            chart_name="$(basename "$infra_values" -values.yaml)"
+            helm lint "charts/infra/$chart_name" -f "$infra_values"
           done
 
-          for f in environments/*/*/values.yaml; do
-            helm template dev charts/apps/namespace -f "$f"
+          for app_values in environments/*/apps/*/values.yaml; do
+            helm template dev charts/apps/namespace -f "$app_values"
           done

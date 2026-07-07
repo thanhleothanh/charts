@@ -16,6 +16,8 @@ apps:
     enabled: true
     configMapRefs:
       - name: kotlin-spring-configmap
+    secretRefs:
+      - name: db-secret
     image:
       repository: ghcr.io/thanhleothanh/kotlin-spring
       tag: latest
@@ -45,5 +47,10 @@ configMap:
         ASB_QUEUE_NAME: demo-events
 
 secret:
+  storeRef:
+    name: cluster-secret-store
+  refreshInterval: 1m
   refs:
     - name: db-secret
+      remoteRef:
+        key: dev/db-secret

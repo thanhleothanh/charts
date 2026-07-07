@@ -1,0 +1,17 @@
+# name: cluster-secret-store
+#
+# provider: vault
+#
+# vault:
+#   server: ""
+#   path: secret
+#   auth:
+#     mountPath: kubernetes
+#     role: ""
+#     serviceAccountRef:
+#       name: ""
+#       namespace: ""
+#
+# azureKV:
+#   vaultUrl: ""
+#   authType: ManagedIdentity

@@ -52,11 +52,18 @@ configMap:
   #     data:
   #       KEY: value
 
-# Reference existing Secrets (created manually with kubectl)
-# These are injected into all apps' envFrom
+# Secrets for this namespace
+# Each ref creates a Kubernetes Secret via External Secrets Operator
+# when remoteRef is provided. If remoteRef is absent, the ref is treated
+# as a pre-existing manual secret (validated only when verifyRefs=true).
 secret:
+  storeRef:
+    name: cluster-secret-store
+  refreshInterval: 1m
   refs: []
-  #   - name: my-existing-secret
+  #   - name: db-secret
+  #     remoteRef:
+  #       key: dev/db-secret    # Vault convention: {namespace}/{name}
 
 # Apps for this namespace
 # Toggle enabled + set image tags per environment

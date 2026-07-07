@@ -1,8 +1,0 @@
-# Shared infrastructure defaults
-# Deployed once per cluster
-
-ingress-controller:
-  enabled: true
-  service:
-    type: LoadBalancer
-
