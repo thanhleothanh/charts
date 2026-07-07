@@ -37,23 +37,11 @@ jobs:
           resource-group: ${{ github.event.inputs.resource_group }}
           cluster-name: ${{ github.event.inputs.cluster_name }}
 
-      - name: Build Helm dependencies
-        run: |
-          helm dependency build ./charts/infra/cluster
-
-      - name: Deploy cluster chart (Traefik)
-        run: |
-          helm upgrade --install personal-cluster ./charts/infra/cluster \
-            -n default \
-            -f ./environments/azure-aks/cluster-values.yaml \
-            --wait \
-            --atomic
-
       - name: Deploy namespace chart
         run: |
           helm upgrade --install ${{ github.event.inputs.env }}-apps ./charts/apps/namespace \
             -n ${{ github.event.inputs.env }} --create-namespace \
-            -f ./environments/azure-aks/${{ github.event.inputs.env }}/values.yaml \
+            -f ./environments/azure-aks/apps/${{ github.event.inputs.env }}/values.yaml \
             --set validations.verifyRefs=true \
             --wait \
             --atomic
