@@ -14,15 +14,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: azure/setup-helm@v4
+      - name: Add Helm repos
+        run: |
+          helm repo add traefik https://traefik.github.io/charts
+          helm repo update
       - name: Lint charts
         run: |
           for infra_values in environments/*/infra/*-values.yaml; do
-            env_dir="$(dirname "$(dirname "$infra_values")")"
-            env="$(basename "$env_dir")"
             chart_name="$(basename "$infra_values" -values.yaml)"
-            helm lint "charts/infra/$chart_name" -f "$infra_values"
+            if [ "$chart_name" = "ingress-controller" ]; then
+              helm template test traefik/traefik -f "$infra_values"
+            else
+              helm lint "charts/infra/$chart_name" -f "$infra_values"
+              helm template test "charts/infra/$chart_name" -f "$infra_values"
+            fi
           done
 
           for app_values in environments/*/apps/*/values.yaml; do
-            helm template dev charts/apps/namespace -f "$app_values"
+            helm lint charts/apps/namespace -f "$app_values"
+            helm template test charts/apps/namespace -f "$app_values"
           done

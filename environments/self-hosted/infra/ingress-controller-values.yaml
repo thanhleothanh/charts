@@ -1,6 +1,76 @@
-replicaCount: 1
+deployment:
+  replicas: 1
+  kind: Deployment
+
+image:
+  repository: traefik
+  tag: ""
+  pullPolicy: IfNotPresent
+
 service:
-  type: NodePort
-  nodePorts:
-    web: 30080
-    websecure: 30443
+  enabled: true
+  single: true
+  spec:
+    type: NodePort
+  annotations: {}
+
+ports:
+  traefik:
+    port: 8080
+    exposedPort: 8080
+    expose:
+      default: false
+    protocol: TCP
+  web:
+    port: 8000
+    exposedPort: 80
+    expose:
+      default: true
+    protocol: TCP
+    nodePort: 30080
+  websecure:
+    port: 8443
+    exposedPort: 443
+    expose:
+      default: true
+    protocol: TCP
+    nodePort: 30443
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+
+ingressRoute:
+  dashboard:
+    enabled: false
+  healthcheck:
+    enabled: false
+
+accessLog:
+  enabled: true
+
+log:
+  level: INFO
+
+api:
+  dashboard: false
+
+providers:
+  kubernetesCRD:
+    enabled: true
+  kubernetesIngress:
+    enabled: true
+    publishedService:
+      enabled: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
