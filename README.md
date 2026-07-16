@@ -4,6 +4,10 @@ Helm-based project for managing a personal Kubernetes cluster with namespace-bas
 
 All images are pulled from `ghcr.io/thanhleothanh/<project>:latest`.
 
+## Infrastructure (Terraform)
+
+Azure infra (AKS, Postgres, MongoDB, Key Vault, Service Bus, private networking) is managed by Terraform under [`terraform/azure-aks/`](terraform/azure-aks/). See [`terraform/azure-aks/README.md`](terraform/azure-aks/README.md) for deploy steps. Helm charts below deploy apps **into** the AKS cluster that Terraform provisions.
+
 ## Architecture
 
 ```
