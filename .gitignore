@@ -3,3 +3,12 @@
 **/Chart.lock
 .env
 *.env
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+terraform.tfplan
+terraform/environments/**/terraform.tfstate

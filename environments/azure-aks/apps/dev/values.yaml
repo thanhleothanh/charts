@@ -19,6 +19,7 @@ apps:
     secretRefs:
       - name: db-secret
       - name: asb-secret
+      - name: mongo-secret
     image:
       repository: ghcr.io/thanhleothanh/kotlin-spring
       tag: latest
@@ -55,6 +56,9 @@ secret:
     - name: db-secret
       remoteRef:
         key: db-secret
+    - name: mongo-secret
+      remoteRef:
+        key: mongo-secret
     - name: asb-secret
       remoteRef:
         key: asb-secret
