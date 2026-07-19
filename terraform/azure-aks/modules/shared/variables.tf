@@ -10,8 +10,19 @@ variable "vault_name" {
   type = string
 }
 
-variable "servicebus_name" {
-  type = string
+variable "vault_public_network_access_enabled" {
+  type    = bool
+  default = false
+}
+
+variable "vault_purge_protection_enabled" {
+  type    = bool
+  default = false
+}
+
+variable "vault_sku_name" {
+  type    = string
+  default = "standard"
 }
 
 variable "subnet_id" {
@@ -38,9 +49,18 @@ variable "aks_cluster_principal_id" {
   description = "AKS cluster system-assigned identity principal ID (personal-cluster), granted Secrets User on the vault."
 }
 
+variable "servicebus_name" {
+  type = string
+}
+
 variable "servicebus_sku" {
   type    = string
   default = "Standard"
+}
+
+variable "servicebus_public_network_access_enabled" {
+  type    = bool
+  default = true
 }
 
 variable "tags" {

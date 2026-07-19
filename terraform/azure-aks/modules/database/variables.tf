@@ -46,7 +46,7 @@ variable "postgres_administrator_login" {
 
 variable "postgres_public_network_access_enabled" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "mongo_administrator_username" {
@@ -56,7 +56,7 @@ variable "mongo_administrator_username" {
 
 variable "mongo_public_network_access" {
   type    = string
-  default = "Enabled"
+  default = "Disabled"
 }
 
 variable "mongo_compute_tier" {

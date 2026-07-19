@@ -1,8 +1,12 @@
 environment = "dev"
-location    = "indonesiacentral"
+location    = "southeastasia"
+tags = {
+  project    = "personal-cluster"
+  managed-by = "terraform"
+}
 
 # REQUIRED: set your Azure AD tenant ID (used by Key Vault access policies)
-tenant_id = ""
+# tenant_id = ""
 
 # Optional overrides:
 # cluster_name  = "personal-cluster"
@@ -10,8 +14,3 @@ tenant_id = ""
 # mongo_name    = "personal-cluster-mongodb"
 # vault_name    = "personal-cluster-vault"
 # servicebus_name = "personal-cluster-asb"
-
-tags = {
-  project    = "personal-cluster"
-  managed-by = "terraform"
-}

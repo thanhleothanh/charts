@@ -7,9 +7,9 @@ resource "azurerm_key_vault" "this" {
   location                      = var.location
   resource_group_name           = var.resource_group_name
   tenant_id                     = var.tenant_id
-  sku_name                      = "standard"
-  public_network_access_enabled = true
-  purge_protection_enabled      = false
+  sku_name                      = var.vault_sku_name
+  public_network_access_enabled = var.vault_public_network_access_enabled
+  purge_protection_enabled      = var.vault_purge_protection_enabled
   rbac_authorization_enabled     = true
   tags                          = var.tags
 }
@@ -81,6 +81,6 @@ resource "azurerm_servicebus_namespace" "this" {
   location                      = var.location
   resource_group_name           = var.resource_group_name
   sku                           = var.servicebus_sku
-  public_network_access_enabled = true
+  public_network_access_enabled = var.servicebus_public_network_access_enabled
   tags                          = var.tags
 }
